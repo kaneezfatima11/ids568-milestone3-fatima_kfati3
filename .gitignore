@@ -5,3 +5,4 @@ mlruns/
 artifacts/
 mlflow.db
 .airflow/
+mlartifacts/

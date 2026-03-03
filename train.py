@@ -1,31 +1,35 @@
 import argparse
 import mlflow
 import mlflow.sklearn
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import train_test_split
+import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
 import joblib
 import os
 
+PROJECT_ROOT = os.path.expanduser("~/ids568-milestone3-fatima_kfati3")
+ARTIFACT_DIR = os.path.join(PROJECT_ROOT, "artifacts")
+
 
 def main(n_estimators, max_depth):
-    # Load dataset
-    data = load_breast_cancer()
-    X = data.data
-    y = data.target
+    # Load preprocessed data
+    X_train = pd.read_csv(os.path.join(ARTIFACT_DIR, "X_train.csv"))
+    X_test = pd.read_csv(os.path.join(ARTIFACT_DIR, "X_test.csv"))
+    y_train = pd.read_csv(os.path.join(ARTIFACT_DIR, "y_train.csv")).values.ravel()
+    y_test = pd.read_csv(os.path.join(ARTIFACT_DIR, "y_test.csv")).values.ravel()
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
-    )
-
-    # Start MLflow run
     mlflow.set_experiment("ids568_milestone3_rf_experiments")
+
     with mlflow.start_run(run_name=f"rf_{n_estimators}_depth_{max_depth}"):
 
         # Log parameters
+        mlflow.log_param("model_type", "RandomForestClassifier")
         mlflow.log_param("n_estimators", n_estimators)
         mlflow.log_param("max_depth", max_depth)
+        mlflow.log_param("data_source", "artifacts_preprocessed_split")
+        mlflow.log_param("train_size", len(X_train))
+        mlflow.log_param("test_size", len(X_test))
+        mlflow.log_param("num_features", X_train.shape[1])
 
         # Train model
         model = RandomForestClassifier(
@@ -36,19 +40,18 @@ def main(n_estimators, max_depth):
 
         model.fit(X_train, y_train)
 
-        # Predictions
         y_pred = model.predict(X_test)
 
-        # Metrics
         accuracy = accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred)
 
+        # Log metrics
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1_score", f1)
 
         # Save model artifact
-        os.makedirs("artifacts", exist_ok=True)
-        model_path = "artifacts/model.pkl"
+        os.makedirs(ARTIFACT_DIR, exist_ok=True)
+        model_path = os.path.join(ARTIFACT_DIR, "model.pkl")
         joblib.dump(model, model_path)
 
         mlflow.log_artifact(model_path)
