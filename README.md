@@ -104,4 +104,45 @@ This project implements a production-style ML workflow combining:
 Airflow orchestration
 MLflow experiment tracking
 Reproducible model training
+
 Fully automated pipeline.
+
+## How to Run the Pipeline
+
+### Run Locally
+
+1. Activate the virtual environment
+
+```
+source venv/bin/activate
+```
+
+2. Start MLflow UI
+
+```
+mlflow ui
+```
+
+3. Start Airflow
+
+```
+airflow standalone
+```
+
+4. Trigger the pipeline
+
+```
+airflow dags trigger mlflow_training_pipeline
+```
+
+### CI/CD Pipeline
+
+A GitHub Actions workflow automatically runs when code is pushed to the `main` branch.
+The workflow performs the following steps:
+
+* Installs dependencies
+* Generates dataset artifacts
+* Runs model training
+* Executes model validation
+
+This ensures the model training pipeline is continuously tested and validated.
