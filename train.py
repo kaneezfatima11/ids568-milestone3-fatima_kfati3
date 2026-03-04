@@ -1,11 +1,12 @@
 import argparse
+import os
+
+import joblib
 import mlflow
 import mlflow.sklearn
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
-import joblib
-import os
 
 PROJECT_ROOT = os.path.expanduser("~/ids568-milestone3-fatima_kfati3")
 ARTIFACT_DIR = os.path.join(PROJECT_ROOT, "artifacts")
@@ -40,8 +41,11 @@ def main(n_estimators, max_depth):
 
         model.fit(X_train, y_train)
 
-        y_pred = model.predict(X_test)
+        # ✅ This creates runs:/<run_id>/model so your Airflow register_model works
+        mlflow.sklearn.log_model(model, artifact_path="model")
 
+        # Evaluate
+        y_pred = model.predict(X_test)
         accuracy = accuracy_score(y_test, y_pred)
         f1 = f1_score(y_test, y_pred)
 
@@ -49,11 +53,12 @@ def main(n_estimators, max_depth):
         mlflow.log_metric("accuracy", accuracy)
         mlflow.log_metric("f1_score", f1)
 
-        # Save model artifact
+        # Save model artifact (extra file copy for your artifacts folder + hashing)
         os.makedirs(ARTIFACT_DIR, exist_ok=True)
         model_path = os.path.join(ARTIFACT_DIR, "model.pkl")
         joblib.dump(model, model_path)
 
+        # Optional: also log the raw pickle file
         mlflow.log_artifact(model_path)
 
         print(f"Accuracy: {accuracy}")
