@@ -6,25 +6,55 @@ branches:
 - main
 
 jobs:
-train-and-validate:
-runs-on: ubuntu-latest
+  train_and_validate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Create artifacts folder
+        run: |
+          mkdir -p artifacts
+
+      - name: Run preprocessing
+        run: |
+          python preprocess.py
+
+      - name: Run training
+        run: |
+          python train.py --n_estimators 120 --max_depth 6
+
+      - name: Run validation
+        run: |
+          python model_validation.py
 
 ```
 steps:
   - name: Checkout repository
     uses: actions/checkout@v3
 
-  - name: Set up Python
+  - name: Setup Python
     uses: actions/setup-python@v4
     with:
-      python-version: "3.11"
+      python-version: '3.11'
 
   - name: Install dependencies
     run: |
       python -m pip install --upgrade pip
       pip install -r requirements.txt
 
-  - name: Create artifacts directory
+  - name: Create artifacts folder
     run: |
       mkdir -p artifacts
 
