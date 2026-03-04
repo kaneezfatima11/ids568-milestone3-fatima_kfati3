@@ -98,6 +98,141 @@ Data splits are generated in preprocess.py
 train.py loads preprocessed data from artifacts/
 Absolute paths are used to ensure Airflow compatibility
 MLflow experiment name: ids568_milestone3_rf_experiments
+**Notes**
+Data splits are generated in preprocess.py
+train.py loads preprocessed data from artifacts/
+Absolute paths are used to ensure Airflow compatibility
+MLflow experiment name: ids568_milestone3_rf_experiments
+
+
+------------------------------
+ARCHITECTURE EXPLANATION
+------------------------------
+
+This pipeline uses a layered MLOps architecture integrating Airflow,
+MLflow, and GitHub Actions.
+
+Airflow
+- Orchestrates the pipeline using a Directed Acyclic Graph (DAG)
+- Manages dependencies between preprocessing, training, validation, and model registration
+
+MLflow
+- Tracks experiments, parameters, metrics, and artifacts
+- Maintains model lineage using the MLflow Model Registry
+
+GitHub Actions
+- Runs CI/CD pipelines on code push
+- Automatically executes training and validation checks
+
+This architecture ensures reproducibility, traceability, and automated governance of models.
+
+
+------------------------------
+DAG IDEMPOTENCY AND LINEAGE
+------------------------------
+
+The Airflow DAG is designed to be idempotent.
+
+Key guarantees:
+- Each run produces reproducible outputs
+- Data artifacts are written to the artifacts directory
+- Model versions are registered with MLflow
+
+Lineage is maintained through MLflow experiment tracking, which records:
+- Parameters
+- Metrics
+- Model artifacts
+- Run identifiers
+
+This ensures full traceability from dataset to trained model.
+
+
+------------------------------
+CI-BASED MODEL GOVERNANCE
+------------------------------
+
+GitHub Actions enforces model quality through CI pipelines.
+
+The workflow performs:
+- Dependency installation
+- Dataset artifact generation
+- Model training
+- Validation checks
+
+If validation fails, the CI job fails and the model is not promoted.
+This prevents low-quality models from entering the registry.
+
+
+------------------------------
+EXPERIMENT TRACKING METHODOLOGY
+------------------------------
+
+MLflow is used to track experiments and maintain reproducibility.
+
+Each training run logs:
+
+Parameters
+- model_type
+- n_estimators
+- max_depth
+- train_size
+- test_size
+- num_features
+
+Metrics
+- accuracy
+- f1_score
+
+Artifacts
+- trained model.pkl
+
+This allows comparison of multiple runs and model configurations.
+
+
+------------------------------
+RETRY AND FAILURE HANDLING
+------------------------------
+
+Airflow tasks include retry mechanisms to improve reliability.
+
+Pipeline configuration includes:
+- retries = 2
+- retry_delay between attempts
+- on_failure_callback for logging failures
+
+This ensures temporary failures (e.g., resource issues) do not break the pipeline.
+
+
+------------------------------
+MONITORING AND ALERTING
+------------------------------
+
+Pipeline execution can be monitored using:
+
+Airflow UI
+- DAG graph view
+- Task status monitoring
+- Execution logs
+
+MLflow UI
+- Experiment runs
+- Metrics and parameters
+- Model artifacts
+
+These tools provide visibility into pipeline health and model performance.
+
+
+------------------------------
+ROLLBACK PROCEDURE
+------------------------------
+
+If a model performs poorly after deployment:
+
+1. Identify previous stable model version in MLflow Model Registry
+2. Transition that version back to Staging or Production
+3. Disable or archive the faulty model version
+
+This enables safe rollback to a previously validated model.
 
 **Conclusion**
 This project implements a production-style ML workflow combining:
@@ -146,3 +281,4 @@ The workflow performs the following steps:
 * Executes model validation
 
 This ensures the model training pipeline is continuously tested and validated.
+
