@@ -98,12 +98,6 @@ Data splits are generated in preprocess.py
 train.py loads preprocessed data from artifacts/
 Absolute paths are used to ensure Airflow compatibility
 MLflow experiment name: ids568_milestone3_rf_experiments
-**Notes**
-Data splits are generated in preprocess.py
-train.py loads preprocessed data from artifacts/
-Absolute paths are used to ensure Airflow compatibility
-MLflow experiment name: ids568_milestone3_rf_experiments
-
 
 ------------------------------
 ARCHITECTURE EXPLANATION
@@ -188,7 +182,6 @@ Artifacts
 
 This allows comparison of multiple runs and model configurations.
 
-
 ------------------------------
 RETRY AND FAILURE HANDLING
 ------------------------------
@@ -201,7 +194,6 @@ Pipeline configuration includes:
 - on_failure_callback for logging failures
 
 This ensures temporary failures (e.g., resource issues) do not break the pipeline.
-
 
 ------------------------------
 MONITORING AND ALERTING
@@ -233,8 +225,27 @@ If a model performs poorly after deployment:
 3. Disable or archive the faulty model version
 
 This enables safe rollback to a previously validated model.
+------------------------------
+MODEL LINEAGE ANALYSIS
+------------------------------
 
-**Conclusion**
+MLflow enables model lineage tracking by linking each model version to
+its training run.
+
+Each run records:
+- training parameters
+- evaluation metrics
+- model artifacts
+- dataset splits
+
+This allows comparison between different runs in the MLflow experiment
+table and enables selection of the best performing model before
+promotion to staging or production.
+
+------------------------------
+CONCLUSION
+------------------------------
+
 This project implements a production-style ML workflow combining:
 Airflow orchestration
 MLflow experiment tracking
@@ -270,7 +281,10 @@ airflow standalone
 airflow dags trigger mlflow_training_pipeline
 ```
 
-### CI/CD Pipeline
+------------------------------
+CI/CD PIPELINE
+------------------------------
+
 
 A GitHub Actions workflow automatically runs when code is pushed to the `main` branch.
 The workflow performs the following steps:
@@ -281,4 +295,5 @@ The workflow performs the following steps:
 * Executes model validation
 
 This ensures the model training pipeline is continuously tested and validated.
+
 
