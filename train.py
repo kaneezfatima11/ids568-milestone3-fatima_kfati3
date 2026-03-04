@@ -8,7 +8,7 @@ import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, f1_score
 
-PROJECT_ROOT = os.path.expanduser("~/ids568-milestone3-fatima_kfati3")
+PROJECT_ROOT = os.getcwd()
 ARTIFACT_DIR = os.path.join(PROJECT_ROOT, "artifacts")
 
 
